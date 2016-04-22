@@ -33,6 +33,10 @@ class ruuiDynamicTextView: UITextView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
