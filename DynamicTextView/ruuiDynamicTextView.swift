@@ -9,7 +9,7 @@
 import Foundation
 
 class ruuiDynamicTextView: UITextView {
-    var dynamicDelegate: ruuiDynamicTextViewDelegate?
+    weak var dynamicDelegate: ruuiDynamicTextViewDelegate?
     var minHeight: CGFloat!
     var maxHeight: CGFloat?
     private var contentOffsetCenterY: CGFloat!
@@ -17,20 +17,24 @@ class ruuiDynamicTextView: UITextView {
     init(frame: CGRect, offset: CGFloat = 0.0) {
         super.init(frame: frame, textContainer: nil)
         minHeight = frame.size.height
-
+        
         //center first line
         let size = self.sizeThatFits(CGSizeMake(self.bounds.size.width, CGFloat.max))
         contentOffsetCenterY = (-(frame.size.height - size.height * self.zoomScale) / 2.0) + offset
-
+        
         //listen for text changes
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(textChanged), name: UITextViewTextDidChangeNotification, object: nil)
-
+        
         //update offsets
         layoutSubviews()
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
     override func layoutSubviews() {
@@ -57,7 +61,7 @@ class ruuiDynamicTextView: UITextView {
             self.contentOffset.y = updateContentOffsetY!
         }
     }
-
+    
     func textChanged() {
         let caretRect = self.caretRectForPosition(self.selectedTextRange!.start)
         let overflow = caretRect.size.height + caretRect.origin.y - (self.contentOffset.y + self.bounds.size.height - self.contentInset.bottom - self.contentInset.top)
@@ -71,6 +75,6 @@ class ruuiDynamicTextView: UITextView {
     }
 }
 
-protocol ruuiDynamicTextViewDelegate {
+protocol ruuiDynamicTextViewDelegate: NSObjectProtocol {
     func dynamicTextViewDidResizeHeight(textview: ruuiDynamicTextView, height: CGFloat)
 }
